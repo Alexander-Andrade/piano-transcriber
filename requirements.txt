@@ -1,0 +1,14 @@
+hmmlearn==0.2.0
+Keras==2.0.9
+librosa==0.6.0
+matplotlib==2.1.1
+midi==0.2.3
+numba==0.37.0
+numpy==1.13.3
+PyWavelets==0.5.2
+scikit-learn==0.19.1
+scipy==1.0.0
+sklearn==0.0
+tensorflow==1.4.0
+tensorflow-gpu==1.4.0
+tensorflow-tensorboard==0.4.0rc3
