@@ -1,2 +1,4 @@
 .idea/
 venv/
+.spyproject/
+models/__pycache__/
