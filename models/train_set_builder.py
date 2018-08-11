@@ -1,4 +1,12 @@
+import numpy as np
+import librosa
+import time
+from models.midi_model import MidiNotes
+
+
 class TrainSetBuilder:
+    
+    N_PIANO_NOTES = 88
     
     def __init__(self, train_pair, sampling_rate=44100):
         self.train_pair = train_pair
@@ -16,7 +24,7 @@ class TrainSetBuilder:
         frames_timestamps = librosa.core.frames_to_time(np.arange(x_size), self.sampling_rate)
         # sec to ms
         frames_timestamps *= 1000
-        y = np.zeros((train_set_len, 88), dtype=np.bool)
+        y = np.zeros((x_size, N_PIANO_NOTES), dtype=np.bool)
         for i, timestamp in enumerate(frames_timestamps):
             notes = np.array(midi_notes.notes_at(timestamp), dtype=np.dtype('u4'))
             notes_indexes = notes - 21
