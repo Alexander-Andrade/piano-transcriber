@@ -5,6 +5,7 @@ from constants import *
 from shared import *
 import librosa
 import time
+from scipy.signal import argrelextrema
 
 
 def piano_roll(midi_filename, frames_total):
@@ -54,10 +55,10 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
 if __name__ == "__main__":
 
     # name = samples_names()[0]
-    spectrum = np.load("../datasets/features_brahms_opus1_1.npy")
-    roll = piano_roll('../samples/brahms_opus1_1.mid', spectrum.shape[0])
+    spectrum = np.load("../datasets/features_balakirew_islamei.npy")
+    roll = piano_roll('../samples/balakirew_islamei.mid', spectrum.shape[0])
 
-    start_frame = 0
+    start_frame = 36000
     slice_length = 512
     corr_interval = (-150, 50)
 
@@ -68,11 +69,18 @@ if __name__ == "__main__":
     print("shift: {0}, corr: {1}".format(shift, corr_best))
     print("metric: {0}".format(corr_best / features_slice.sum() * labels_slice.sum()))
 
+    best_shift = -73
+    labels_slice = shifted_slice(roll, start_frame + best_shift, start_frame + slice_length + best_shift)
+
+    shifts = np.arange(corr_interval[0], corr_interval[1])
+    extrema = argrelextrema(corr, np.greater)
+    print(list(zip(np.take(shifts, extrema[0]).tolist(), np.take(corr, extrema[0]).tolist())))
+
     f, axes = plt.subplots(2, 2)
     #
     axes[0][0].imshow(features_slice)
     axes[0][1].imshow(labels_slice)
     axes[1][0].plot(normalize(features_slice.sum(axis=1)))
     axes[1][0].plot(normalize(labels_slice.sum(axis=1)))
-    axes[1][1].plot(corr)
+    axes[1][1].plot(shifts, corr)
     plt.show()
