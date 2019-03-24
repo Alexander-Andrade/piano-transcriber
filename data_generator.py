@@ -112,7 +112,7 @@ class DataGenerator(keras.utils.Sequence):
 
 
 if __name__ == "__main__":
-    with open("data_info.yaml", 'r') as stream:
+    with open("train.yaml", 'r') as stream:
         #try:
         data = yaml.load(stream)
         gen = DataGenerator(info=data, n_frames=512)

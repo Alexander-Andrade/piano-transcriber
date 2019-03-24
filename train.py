@@ -17,9 +17,15 @@ n_frames = 512
 n_lstm_neurons = 300
 n_features = 84
 
-file = open("data_info.yaml", 'r')
-train_info = yaml.load(file)
-gen = DataGenerator(info=train_info, n_frames=n_frames, batch_size=batch_size)
+train_file = open("train.yaml", 'r')
+train_info = yaml.load(train_file)
+train_file.close()
+train_generator = DataGenerator(info=train_info, n_frames=n_frames, batch_size=batch_size)
+
+validation_file = open("validation.yaml", 'r')
+validation_info = yaml.load(validation_file)
+validation_file.close()
+validation_generator = DataGenerator(info=validation_info, n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
 model.add(LSTM(n_lstm_neurons,
@@ -35,7 +41,8 @@ tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
                           update_freq='batch'
                           )
 
-model.fit_generator(generator=gen,
+model.fit_generator(generator=train_generator,
+                    validation_data=validation_generator,
                     callbacks=[tb_callback])
 
 # for x, y in gen:
@@ -46,4 +53,3 @@ model.fit_generator(generator=gen,
 #               epochs=n_epoch,
 #               batch_size=batch_size,
 #               callbacks=[tb_callback])
-
