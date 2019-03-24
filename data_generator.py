@@ -1,16 +1,17 @@
 import numpy as np
-#import keras
+import keras
 import yaml
 import math
 import matplotlib.pyplot as plt
 from shared import *
 
-# keras.utils.Sequence
-class DataGenerator():
 
-    def __init__(self, info, n_frames):
+class DataGenerator(keras.utils.Sequence):
+
+    def __init__(self, info, n_frames, batch_size):
         self.info = info
         self.n_frames = n_frames
+        self.batch_size = batch_size
         self.__remove_slices_from_info()
         self.length = self.__calc_len()
         self.__init_iter()
@@ -83,6 +84,8 @@ class DataGenerator():
         cur_slice_pos, shift = slice_info
         spectrum_slice = self.cur['spectrum'][cur_slice_pos:cur_slice_pos + self.n_frames]
         labels_slice = shifted_slice(self.cur['labels'], cur_slice_pos + shift, cur_slice_pos + self.n_frames + shift)
+        spectrum_slice = spectrum_slice.reshape(self.batch_size, self.n_frames, spectrum_slice.shape[1])
+        labels_slice = labels_slice.reshape(self.batch_size, self.n_frames, N_NOTES)
         return spectrum_slice, labels_slice
 
     def __load_current_file(self, filename):

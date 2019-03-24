@@ -19,7 +19,7 @@ n_features = 84
 
 file = open("data_info.yaml", 'r')
 train_info = yaml.load(file)
-gen = DataGenerator(info=train_info, n_frames=n_frames)
+gen = DataGenerator(info=train_info, n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
 model.add(LSTM(n_lstm_neurons,
@@ -31,15 +31,19 @@ model.compile(loss='binary_crossentropy',
               metrics=['accuracy'])
 
 tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
-                          batch_size=batch_size
+                          batch_size=batch_size,
+                          update_freq='batch'
                           )
-# update_freq='batch'
 
-for x, y in gen:
-    x_train = x.reshape(batch_size, n_frames, x.shape[1])
-    y_train = y.reshape(batch_size, n_frames, N_NOTES)
-    #print(model.train_on_batch(x_train, y_train))
-    model.fit(x_train, y_train,
-              epochs=n_epoch,
-              batch_size=batch_size,
-              callbacks=[tb_callback])
+model.fit_generator(generator=gen,
+                    callbacks=[tb_callback])
+
+# for x, y in gen:
+#     x_train = x.reshape(batch_size, n_frames, x.shape[1])
+#     y_train = y.reshape(batch_size, n_frames, N_NOTES)
+#     ##print(model.train_on_batch(x_train, y_train))
+#     model.fit(x_train, y_train,
+#               epochs=n_epoch,
+#               batch_size=batch_size,
+#               callbacks=[tb_callback])
+
