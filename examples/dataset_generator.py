@@ -1,10 +1,10 @@
-import numpy as np
+import pretty_midi
 import librosa
-from midi_notes import MidiNotes
-from constants import *
+from examples.midi_notes import MidiNotes
 from shared import *
 import matplotlib.pyplot as plt
-import time
+from scipy.signal import argrelextrema
+from scipy.ndimage.filters import median_filter
 
 
 CORR_INTERVAL = (-30, 30)
@@ -14,9 +14,16 @@ SLICE_LENGTH = 512
 def cqt_features(audio_filename):
     y, sr = librosa.load(audio_filename, SR)
     y_mono = librosa.to_mono(y)
-    spectrum = np.abs(librosa.cqt(y_mono, sr=sr, fmin=librosa.note_to_hz('C0')))
+    spectrum = np.abs(librosa.cqt(y_mono, sr=sr))
     spectrum = np.transpose(spectrum)
     return normalize(spectrum)
+
+
+def piano_roll_pretty(midi_filename, frames_total):
+    midi = pretty_midi.PrettyMIDI(midi_filename)
+    frames_timestamps = librosa.core.frames_to_time(np.arange(frames_total), SR)
+    roll = np.transpose(midi.get_piano_roll(times=frames_timestamps)[FIRST_NOTE_MIDI_NUM:LAST_NOTE_MIDI_NUM])
+    return np.where(roll > 0, 1., 0.)
 
 
 def piano_roll(midi_filename, frames_total):
@@ -32,22 +39,6 @@ def piano_roll(midi_filename, frames_total):
         np.put(roll[i], notes_indexes, 1.)
 
     return roll
-
-
-def shifted_slice(v, start, end):
-    v_length = v.shape[0]
-    length = end - start
-
-    if start < 0:
-        res = np.zeros(shape=(length, N_NOTES))
-        res[-start:length] = v[0:length+start]
-        return res
-    elif end > v_length - 1:
-        res = np.zeros(shape=(length, N_NOTES))
-        res[0:v_length-start] = v[start:v_length]
-        return res
-    else:
-        return v[start:end]
 
 
 def train_slice(features, labels, start_frame, slice_length, corr_interval):
@@ -73,30 +64,53 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
 
 if __name__ == "__main__":
     # for name in samples_names():
-    #     cqt_features(features_filename="samples/{0}.mp3".format(name))
+    #     spectrum = cqt_features("samples/{0}.mp3".format(name))
+    #     roll = piano_roll_pretty("samples/{0}.mid".format(name), spectrum.shape[0])
+    #
+    #     np.save("datasets/features_{0}.npy".format(name), spectrum)
+    #     np.save("datasets/labels_{0}.npy".format(name), roll)
+    #
     #     print("sample {0} added to dataset".format(name))
 
-    name = samples_names()[2]
+    name = 'mz_311_1'
     spectrum = np.load("datasets/features_{0}.npy".format(name))
-    roll = np.load("datasets/labels_{0}.npy".format(name))
-
-    start_frame = 43000
+    # roll = np.load("datasets/labels_{0}.npy".format(name))
+    roll = piano_roll('samples/mz_311_1.mid', spectrum.shape[0])
+    start_frame = 19000
     slice_length = 512
-    corr_interval = (-150, 50)
-
+    corr_interval = (-50, 50)
+    #
     features_slice, labels_slice, shift, corr_best, corr = train_slice(spectrum, roll,
                                                             start_frame=start_frame,
                                                             slice_length=slice_length,
                                                             corr_interval=corr_interval)
     print("shift: {0}, corr: {1}".format(shift, corr_best))
-    print("metric: {0}".format(corr_best / features_slice.sum() * labels_slice.sum()))
-    # best_shift = -78
+
+    # best_shift = -3
     # labels_slice = shifted_slice(roll, start_frame + best_shift, start_frame + slice_length + best_shift)
-    f, axes = plt.subplots(2, 2)
-    #
-    axes[0][0].imshow(features_slice)
-    axes[0][1].imshow(labels_slice)
-    axes[1][0].plot(normalize(features_slice.sum(axis=1)))
-    axes[1][0].plot(normalize(labels_slice.sum(axis=1)))
-    axes[1][1].plot(corr)
+
+    shifts = np.arange(corr_interval[0], corr_interval[1])
+    extrema = argrelextrema(corr, np.greater)
+    print(list(zip(np.take(shifts, extrema[0]).tolist(), np.take(corr, extrema[0]).tolist())))
+
+    l_sum = normalize(median_filter(labels_slice.sum(axis=1), size=3))
+
+    grid = plt.GridSpec(2, 6, bottom=0.04, top=0.98, left=0.02, right=0.98)
+
+    axes = plt.subplot(grid[:, 0])
+    axes.imshow(features_slice)
+
+    axes = plt.subplot(grid[:, 1])
+    axes.imshow(labels_slice)
+
+    axes = plt.subplot(grid[0, 2:])
+    axes.plot(normalize(features_slice.sum(axis=1)))
+    axes.plot(l_sum)
+
+    axes = plt.subplot(grid[1, 2:])
+    axes.plot(shifts, corr)
+
+    mng = plt.get_current_fig_manager()
+    mng.window.state('zoomed')
+
     plt.show()

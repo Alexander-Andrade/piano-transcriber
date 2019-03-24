@@ -31,5 +31,5 @@ class MidiNotes:
 
 
 if __name__ == "__main__":
-    midi = MidiNotes("samples/{0}.mid".format(samples_names()[0]))
+    midi = MidiNotes("samples/{0}.mid".format(samples_names()[0][0]))
     print(midi.notes_at(30*1000))
