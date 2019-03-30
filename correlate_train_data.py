@@ -117,12 +117,12 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
     for key in sorted_hits_keys:
         print("key: {0}, len: {1},frames: {2}".format(key, len(hits[key]), hits[key]))
 
-    for key in sorted_hits_keys[:3]:
+    for key in sorted_hits_keys[:4]:
         print("key: {0}".format(key))
         for frame in hits[key]:
             print("- [{0}, {1}]".format(frame, key))
 
 
 if __name__ == "__main__":
-    stat('mz_311_1', corr_interval=(-20, 20))
+    stat('beethoven_hammerklavier_2', corr_interval=(-30, 30))
     #manual_look()
