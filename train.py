@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, MaxPooling1D
+from keras.layers import Dense
 from keras.layers import TimeDistributed
 from keras.layers import LSTM
 from keras.callbacks import TensorBoard
@@ -9,9 +9,10 @@ from constants import *
 from data_generator import DataGenerator
 import time
 from keras.models import model_from_json
+import tensorflow as tf
 
 
-n_epoch = 1
+n_epoch = 2
 batch_size = 1
 n_frames = 512
 n_lstm_neurons = 300
@@ -40,29 +41,50 @@ def rebuild_model(filename):
 
     return model
 
+
+# Transform train_on_batch return value
+# to dict expected by on_batch_end callback
+def named_logs(model, logs):
+    result = {}
+    for l in zip(model.metrics_names, logs):
+        result[l[0]] = l[1]
+    return result
+
+
 train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch_size=batch_size)
-validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
+# validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
-model.add(Conv1D(input_shape=(512, n_features), filters=32, kernel_size=3, padding='same', activation='relu'))
-model.add(MaxPooling1D(pool_size=1))
-model.add(LSTM(88,
-               # dropout=0.1,
-               # recurrent_dropout=0.1,
-               #input_shape=(n_frames, n_features),
-               return_sequences=True))
+model.add(LSTM(N_NOTES,
+               dropout=0.1,
+               recurrent_dropout=0.1,
+               batch_input_shape=(batch_size, n_frames, n_features),
+               return_sequences=True, stateful=True))
+model.add(LSTM(N_NOTES,
+               dropout=0.1,
+               recurrent_dropout=0.1,
+               return_sequences=True, stateful=True))
 model.add(TimeDistributed(Dense(N_NOTES)))
 model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop')
+              optimizer='rmsprop',
+              metrics=['accuracy'])
 
-tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
+tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/',
+                          histogram_freq=0,
                           batch_size=batch_size,
-                          update_freq='batch'
+                          write_graph=True,
+                          write_grads=True,
+
                           )
 
-model.fit_generator(generator=train_generator,
-                    validation_data=validation_generator,
-                    callbacks=[tb_callback],
-                    epochs=5)
+tb_callback.set_model(model)
 
-save_model(model, 'multi_layer_lstm')
+for i in range(n_epoch):
+    for batch_id, (x, y) in enumerate(train_generator):
+        logs = model.train_on_batch(x, y)
+        print(logs)
+        tb_callback.on_epoch_end(batch_id, named_logs(model, logs))
+        if train_generator.sequence_reseted():
+            model.reset_states()
+tb_callback.on_train_end(None)
+# save_model(model, 'multi_layer_lstm')

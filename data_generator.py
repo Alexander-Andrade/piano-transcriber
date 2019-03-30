@@ -116,6 +116,18 @@ class DataGenerator(keras.utils.Sequence):
 
         raise IndexError
 
+    def sequence_reseted(self):
+        if self.cur['slices_ind'] == 0:
+            return True
+
+        cur_slices = self.__curr_slices()
+        supposed_prev_beg = self.__cur_slice()[0] - self.n_frames
+        prev_beg = cur_slices[self.cur['slices_ind'] - 1][0]
+        if supposed_prev_beg != prev_beg:
+            return True
+
+        return False
+
     @staticmethod
     def from_file(filename, n_frames, batch_size):
         with open(filename, 'r') as file:
