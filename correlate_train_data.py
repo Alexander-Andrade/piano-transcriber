@@ -34,15 +34,15 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
 
 
 if __name__ == "__main__":
-    name = 'beethoven_opus22_1'
+    name = 'beethoven_opus22_4'
     spectrum = np.load("../datasets/features_{0}.npy".format(name))
     roll = np.load("../datasets/labels_{0}.npy".format(name))
 
     print("frames: {0}".format(spectrum.shape[0]))
 
-    start_frame = 19000
+    start_frame = 7000
     slice_length = 512
-    corr_interval = (-100, 30)
+    corr_interval = (-50, 30)
 
     features_slice, labels_slice, shift, corr_best, corr = train_slice(spectrum, roll,
                                                             start_frame=start_frame,
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                                                             corr_interval=corr_interval)
     print("shift: {0}, corr: {1}".format(shift, corr_best))
 
-    best_shift = -4
+    best_shift = -3
     labels_slice = shifted_slice(roll, start_frame + best_shift, start_frame + slice_length + best_shift)
 
     shifts = np.arange(corr_interval[0], corr_interval[1])

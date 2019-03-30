@@ -1,14 +1,14 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Conv1D, MaxPooling1D
 from keras.layers import TimeDistributed
 from keras.layers import LSTM
 from keras.callbacks import TensorBoard
 from shared import *
 from constants import *
 from data_generator import DataGenerator
-import yaml
 import time
+from keras.models import model_from_json
 
 
 n_epoch = 1
@@ -17,24 +17,43 @@ n_frames = 512
 n_lstm_neurons = 300
 n_features = 84
 
-train_file = open("train.yaml", 'r')
-train_info = yaml.load(train_file)
-train_file.close()
-train_generator = DataGenerator(info=train_info, n_frames=n_frames, batch_size=batch_size)
 
-validation_file = open("validation.yaml", 'r')
-validation_info = yaml.load(validation_file)
-validation_file.close()
-validation_generator = DataGenerator(info=validation_info, n_frames=n_frames, batch_size=batch_size)
+def save_model(model, name):
+    model_json = model.to_json()
+    with open("trained_models/{0}.json".format(name), "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights("trained_models/{0}.h5".format(name))
+
+def rebuild_model(filename):
+    # load json and create model
+    file = open('trained_models/{0}.json'.format(filename), 'r')
+    model_json = file.read()
+    file.close()
+    model = model_from_json(model_json)
+    # load weights into new model
+    model.load_weights("trained_models/{0}.h5".format(filename))
+
+    # evaluate loaded model on test data
+    model.compile(loss='binary_crossentropy',
+                  optimizer='rmsprop',
+                  metrics=['accuracy'])
+
+    return model
+
+train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch_size=batch_size)
+validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
-model.add(LSTM(n_lstm_neurons,
-               input_shape=(n_frames, n_features),
+model.add(Conv1D(input_shape=(512, n_features), filters=32, kernel_size=3, padding='same', activation='relu'))
+model.add(MaxPooling1D(pool_size=1))
+model.add(LSTM(88,
+               # dropout=0.1,
+               # recurrent_dropout=0.1,
+               #input_shape=(n_frames, n_features),
                return_sequences=True))
 model.add(TimeDistributed(Dense(N_NOTES)))
 model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+              optimizer='rmsprop')
 
 tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
                           batch_size=batch_size,
@@ -43,13 +62,7 @@ tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
 
 model.fit_generator(generator=train_generator,
                     validation_data=validation_generator,
-                    callbacks=[tb_callback])
+                    callbacks=[tb_callback],
+                    epochs=5)
 
-# for x, y in gen:
-#     x_train = x.reshape(batch_size, n_frames, x.shape[1])
-#     y_train = y.reshape(batch_size, n_frames, N_NOTES)
-#     ##print(model.train_on_batch(x_train, y_train))
-#     model.fit(x_train, y_train,
-#               epochs=n_epoch,
-#               batch_size=batch_size,
-#               callbacks=[tb_callback])
+save_model(model, 'multi_layer_lstm')

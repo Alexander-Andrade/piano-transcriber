@@ -8,10 +8,11 @@ from shared import *
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, info, n_frames, batch_size):
+    def __init__(self, info, n_frames, batch_size, with_labels=True):
         self.info = info
         self.n_frames = n_frames
         self.batch_size = batch_size
+        self.with_labels = with_labels
         self.__remove_slices_from_info()
         self.length = self.__calc_len()
         self.__init_iter()
@@ -83,14 +84,19 @@ class DataGenerator(keras.utils.Sequence):
     def __data_chunk(self, slice_info):
         cur_slice_pos, shift = slice_info
         spectrum_slice = self.cur['spectrum'][cur_slice_pos:cur_slice_pos + self.n_frames]
-        labels_slice = shifted_slice(self.cur['labels'], cur_slice_pos + shift, cur_slice_pos + self.n_frames + shift)
         spectrum_slice = spectrum_slice.reshape(self.batch_size, self.n_frames, spectrum_slice.shape[1])
-        labels_slice = labels_slice.reshape(self.batch_size, self.n_frames, N_NOTES)
-        return spectrum_slice, labels_slice
+
+        if self.with_labels:
+            labels_slice = shifted_slice(self.cur['labels'], cur_slice_pos + shift, cur_slice_pos + self.n_frames + shift)
+            labels_slice = labels_slice.reshape(self.batch_size, self.n_frames, N_NOTES)
+            return spectrum_slice, labels_slice
+
+        return spectrum_slice
 
     def __load_current_file(self, filename):
         self.cur['spectrum'] = np.load("datasets/features_{0}.npy".format(filename))
-        self.cur['labels'] = np.load("datasets/labels_{0}.npy".format(filename))
+        if self.with_labels:
+            self.cur['labels'] = np.load("datasets/labels_{0}.npy".format(filename))
 
     def __len__(self):
         return self.length
@@ -109,6 +115,13 @@ class DataGenerator(keras.utils.Sequence):
                 slices_rel += file_slices_len
 
         raise IndexError
+
+    @staticmethod
+    def from_file(filename, n_frames, batch_size):
+        with open(filename, 'r') as file:
+            info = yaml.load(file)
+            file.close()
+            return DataGenerator(info=info, n_frames=n_frames, batch_size=batch_size)
 
 
 if __name__ == "__main__":
