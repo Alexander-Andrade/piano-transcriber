@@ -1,6 +1,7 @@
 import librosa
 from shared import *
 import pretty_midi
+import os
 
 
 def cqt_features(audio_filename):
@@ -20,10 +21,11 @@ def piano_roll(midi_filename, frames_total):
 
 if __name__ == "__main__":
     for name, ext in samples_names():
-        spectrum = cqt_features("samples/{0}".format(name+ext))
-        roll = piano_roll('samples/{0}.mid'.format(name), spectrum.shape[0])
+        if not os.path.isfile("datasets/features_{0}.npy".format(name)):
+            spectrum = cqt_features("samples/{0}".format(name+ext))
+            roll = piano_roll('samples/{0}.mid'.format(name), spectrum.shape[0])
 
-        np.save("datasets/features_{0}.npy".format(name), spectrum)
-        np.save("datasets/labels_{0}.npy".format(name), roll)
+            np.save("datasets/features_{0}.npy".format(name), spectrum)
+            np.save("datasets/labels_{0}.npy".format(name), roll)
 
-        print("{0} was extracted".format(name))
+            print("{0} was extracted".format(name))

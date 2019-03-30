@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, MaxPooling1D
+from keras.layers import Dense
 from keras.layers import TimeDistributed
 from keras.layers import LSTM
 from keras.callbacks import TensorBoard
@@ -44,12 +44,14 @@ train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch
 validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
-model.add(Conv1D(input_shape=(512, n_features), filters=32, kernel_size=3, padding='same', activation='relu'))
-model.add(MaxPooling1D(pool_size=1))
-model.add(LSTM(88,
-               # dropout=0.1,
-               # recurrent_dropout=0.1,
-               #input_shape=(n_frames, n_features),
+model.add(LSTM(N_NOTES,
+               dropout=0.1,
+               recurrent_dropout=0.1,
+               input_shape=(n_frames, n_features),
+               return_sequences=True))
+model.add(LSTM(N_NOTES,
+               dropout=0.1,
+               recurrent_dropout=0.1,
                return_sequences=True))
 model.add(TimeDistributed(Dense(N_NOTES)))
 model.compile(loss='binary_crossentropy',
