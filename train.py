@@ -45,13 +45,13 @@ validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_fra
 
 model = Sequential()
 model.add(LSTM(N_NOTES,
-               dropout=0.1,
-               recurrent_dropout=0.1,
+               dropout=0.2,
+               recurrent_dropout=0.2,
                input_shape=(n_frames, n_features),
                return_sequences=True))
 model.add(LSTM(N_NOTES,
-               dropout=0.1,
-               recurrent_dropout=0.1,
+               dropout=0.2,
+               recurrent_dropout=0.2,
                return_sequences=True))
 model.add(TimeDistributed(Dense(N_NOTES)))
 model.compile(loss='binary_crossentropy',

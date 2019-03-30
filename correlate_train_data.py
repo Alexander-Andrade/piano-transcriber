@@ -124,5 +124,5 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
 
 
 if __name__ == "__main__":
-    stat('beethoven_hammerklavier_2', corr_interval=(-30, 30))
+    stat('beethoven_opus22_1', corr_interval=(-30, 30))
     #manual_look()
