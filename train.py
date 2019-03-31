@@ -53,6 +53,10 @@ model.add(LSTM(N_NOTES,
                dropout=0.2,
                recurrent_dropout=0.2,
                return_sequences=True))
+model.add(LSTM(N_NOTES,
+               dropout=0.2,
+               recurrent_dropout=0.2,
+               return_sequences=True))
 model.add(TimeDistributed(Dense(N_NOTES)))
 model.compile(loss='binary_crossentropy',
               optimizer='rmsprop')

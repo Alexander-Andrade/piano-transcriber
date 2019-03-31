@@ -34,15 +34,15 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
 
 
 def manual_look():
-    name = 'alb_se5'
+    name = 'burg_gewitter'
     spectrum = np.load("../datasets/features_{0}.npy".format(name))
     roll = np.load("../datasets/labels_{0}.npy".format(name))
 
     print("frames: {0}".format(spectrum.shape[0]))
 
-    start_frame = 5000
+    start_frame = 4000
     slice_length = 512
-    corr_interval = (-50, 30)
+    corr_interval = (-70, 70)
 
     features_slice, labels_slice, shift, corr_best, corr = train_slice(spectrum, roll,
                                                             start_frame=start_frame,
@@ -50,7 +50,7 @@ def manual_look():
                                                             corr_interval=corr_interval)
     print("shift: {0}, corr: {1}".format(shift, corr_best))
 
-    best_shift = 0
+    best_shift = -1
     labels_slice = shifted_slice(roll, start_frame + best_shift, start_frame + slice_length + best_shift)
 
     shifts = np.arange(corr_interval[0], corr_interval[1])
@@ -87,6 +87,7 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
     spectrum = np.load("../datasets/features_{0}.npy".format(name))
     roll = np.load("../datasets/labels_{0}.npy".format(name))
     hits = {}
+    shifts_ext_sums = {}
 
     for i in range(0, spectrum.shape[0], slice_length):
         if i + corr_interval[1] > spectrum.shape[0]:
@@ -103,26 +104,30 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
 
         ext_shifts = np.take(shifts, extrema[0]).tolist()
         ext_values = np.take(corr, extrema[0]).tolist()
+        ext = list(zip(ext_shifts, ext_values))
+        print("f: {0} , extrema: {1}".format(i, ext))
 
-        print("f: {0} , extrema: {1}".format(i, list(zip(ext_shifts, ext_values))))
-
-        for ext_shift in ext_shifts:
+        for ext_shift, ext_value in ext:
             if ext_shift in hits:
                 hits[ext_shift].append(i)
+                shifts_ext_sums[ext_shift] += ext_value
             else:
                 hits[ext_shift] = [i]
+                shifts_ext_sums[ext_shift] = ext_value
 
     print('\nhits')
     sorted_hits_keys = sorted(hits.keys(), key=lambda k: len(hits[k]), reverse=True)
     for key in sorted_hits_keys:
         print("key: {0}, len: {1},frames: {2}".format(key, len(hits[key]), hits[key]))
 
-    for key in sorted_hits_keys[:4]:
+    print('\nbest shift: {}'.format(sorted(shifts_ext_sums.keys(), key=lambda k: shifts_ext_sums[k], reverse=True)[0]))
+
+    for key in sorted_hits_keys[:7]:
         print("key: {0}".format(key))
         for frame in hits[key]:
             print("- [{0}, {1}]".format(frame, key))
 
 
 if __name__ == "__main__":
-    stat('beethoven_opus22_1', corr_interval=(-30, 30))
+    stat('burg_trennung', corr_interval=(-70, 70))
     #manual_look()
