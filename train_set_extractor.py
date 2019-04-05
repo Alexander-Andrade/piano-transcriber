@@ -28,4 +28,4 @@ if __name__ == "__main__":
             np.save("datasets/features_{0}.npy".format(name), spectrum)
             np.save("datasets/labels_{0}.npy".format(name), roll)
 
-            print("{0} was extracted".format(name))
+            print("- filename: {0}".format(name))

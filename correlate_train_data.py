@@ -33,14 +33,12 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
     return features_slice, best_labels_slice, best_shift, best_correlation, corr
 
 
-def manual_look():
-    name = 'burg_gewitter'
+def manual_look(name, start_frame, best_shift=0):
     spectrum = np.load("../datasets/features_{0}.npy".format(name))
     roll = np.load("../datasets/labels_{0}.npy".format(name))
 
     print("frames: {0}".format(spectrum.shape[0]))
 
-    start_frame = 4000
     slice_length = 512
     corr_interval = (-70, 70)
 
@@ -50,7 +48,6 @@ def manual_look():
                                                             corr_interval=corr_interval)
     print("shift: {0}, corr: {1}".format(shift, corr_best))
 
-    best_shift = -1
     labels_slice = shifted_slice(roll, start_frame + best_shift, start_frame + slice_length + best_shift)
 
     shifts = np.arange(corr_interval[0], corr_interval[1])
@@ -129,5 +126,6 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
 
 
 if __name__ == "__main__":
-    stat('burg_trennung', corr_interval=(-70, 70))
-    #manual_look()
+    name = 'chp_op18'
+    stat(name, corr_interval=(-70, 70))
+    manual_look(name, start_frame=0, best_shift=0)

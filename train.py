@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Activation
 from keras.layers import TimeDistributed
 from keras.layers import LSTM
 from keras.callbacks import TensorBoard
@@ -44,16 +44,12 @@ train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch
 validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
-model.add(LSTM(N_NOTES,
+model.add(LSTM(300,
                dropout=0.2,
                recurrent_dropout=0.2,
                input_shape=(n_frames, n_features),
                return_sequences=True))
-model.add(LSTM(N_NOTES,
-               dropout=0.2,
-               recurrent_dropout=0.2,
-               return_sequences=True))
-model.add(LSTM(N_NOTES,
+model.add(LSTM(88,
                dropout=0.2,
                recurrent_dropout=0.2,
                return_sequences=True))
