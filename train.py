@@ -53,7 +53,7 @@ model.add(LSTM(88,
                dropout=0.2,
                recurrent_dropout=0.2,
                return_sequences=True))
-model.add(TimeDistributed(Dense(N_NOTES)))
+model.add(TimeDistributed(Dense(N_NOTES, activation='sigmoid')))
 model.compile(loss='binary_crossentropy',
               optimizer='rmsprop')
 
@@ -65,6 +65,6 @@ tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
 model.fit_generator(generator=train_generator,
                     validation_data=validation_generator,
                     callbacks=[tb_callback],
-                    epochs=5)
+                    epochs=1)
 
 save_model(model, 'multi_layer_lstm')

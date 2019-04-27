@@ -33,14 +33,13 @@ def train_slice(features, labels, start_frame, slice_length, corr_interval):
     return features_slice, best_labels_slice, best_shift, best_correlation, corr
 
 
-def manual_look(name, start_frame, best_shift=0):
+def manual_look(name, corr_interval=(-70, 70), start_frame=0, best_shift=0):
     spectrum = np.load("../datasets/features_{0}.npy".format(name))
     roll = np.load("../datasets/labels_{0}.npy".format(name))
 
     print("frames: {0}".format(spectrum.shape[0]))
 
     slice_length = 512
-    corr_interval = (-70, 70)
 
     features_slice, labels_slice, shift, corr_best, corr = train_slice(spectrum, roll,
                                                             start_frame=start_frame,
@@ -119,13 +118,13 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
 
     print('\nbest shift: {}'.format(sorted(shifts_ext_sums.keys(), key=lambda k: shifts_ext_sums[k], reverse=True)[0]))
 
-    for key in sorted_hits_keys[:7]:
+    for key in sorted_hits_keys[:8]:
         print("key: {0}".format(key))
         for frame in hits[key]:
             print("- [{0}, {1}]".format(frame, key))
 
 
 if __name__ == "__main__":
-    name = 'chp_op18'
-    stat(name, corr_interval=(-70, 70))
-    manual_look(name, start_frame=0, best_shift=0)
+    name = 'mendel_op62_5'
+    stat(name, corr_interval=(-100, 100))
+    manual_look(name, corr_interval=(-100, 100), start_frame=0, best_shift=0)

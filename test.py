@@ -23,7 +23,7 @@ def rebuild_model(filename):
 
 
 test_generator = DataGenerator.from_file("test.yaml", n_frames=512, batch_size=1)
-model = rebuild_model("one_layer_lstm")
+model = rebuild_model("multi_layer_lstm")
 
 
 for x, y in test_generator:
