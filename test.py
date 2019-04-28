@@ -16,13 +16,13 @@ def rebuild_model(filename):
 
     # evaluate loaded model on test data
     model.compile(loss='binary_crossentropy',
-                  optimizer='sgd')
+                  optimizer='adam')
 
     return model
 
 
 test_generator = DataGenerator.from_file("test.yaml", n_frames=512, batch_size=1)
-model = rebuild_model("sigmoid_sgd_5")
+model = rebuild_model("adam_sigmoid")
 
 
 for x, y in test_generator:
