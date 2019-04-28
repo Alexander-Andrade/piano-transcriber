@@ -1,6 +1,7 @@
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Dropout, Flatten
+from keras.layers.convolutional import Conv1D, MaxPooling1D
 from keras.layers import TimeDistributed
 from keras.layers import LSTM
 from keras.callbacks import TensorBoard
@@ -28,16 +29,16 @@ train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch
 validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
 model = Sequential()
-model.add(LSTM(500,
-               dropout=0.2,
-               recurrent_dropout=0.2,
-               input_shape=(n_frames, n_features),
-               return_sequences=True))
-model.add(LSTM(300,
-               dropout=0.2,
-               recurrent_dropout=0.2,
-               return_sequences=True))
-model.add(TimeDistributed(Dense(N_NOTES)))
+model.add(TimeDistributed(Conv1D(filters=64, kernel_size=3, activation='relu'), input_shape=(None, 32, n_features)))
+model.add(TimeDistributed(Conv1D(filters=64, kernel_size=3, activation='relu')))
+model.add(TimeDistributed(Dropout(0.5)))
+model.add(TimeDistributed(MaxPooling1D(pool_size=2)))
+model.add(TimeDistributed(Flatten()))
+model.add(LSTM(100))
+model.add(TimeDistributed(Dropout(0.5)))
+model.add(TimeDistributed(Dense(100, activation='relu')))
+model.add(TimeDistributed(Dense(88, activation='sigmoid')))
+
 model.compile(loss='binary_crossentropy',
               optimizer='rmsprop')
 
@@ -51,4 +52,4 @@ model.fit_generator(generator=train_generator,
                     callbacks=[tb_callback],
                     epochs=5)
 
-save_model(model, 'linear_rmsprop_500_300')
+save_model(model, 'cnn_lstm')

@@ -84,17 +84,17 @@ class DataGenerator(keras.utils.Sequence):
     def __data_chunk(self, slice_info):
         cur_slice_pos, shift = slice_info
         spectrum_slice = self.cur['spectrum'][cur_slice_pos:cur_slice_pos + self.n_frames]
-        spectrum_slice = spectrum_slice.reshape(self.batch_size, self.n_frames, spectrum_slice.shape[1])
+        #spectrum_slice = spectrum_slice.reshape(self.batch_size, self.n_frames, spectrum_slice.shape[1])
 
         # TODO remove to normal
-        # spectrum_slice = spectrum_slice.reshape(self.n_frames, self.batch_size, spectrum_slice.shape[1])
+        spectrum_slice = spectrum_slice.reshape(1, 16, 32, spectrum_slice.shape[1])
 
         if self.with_labels:
             labels_slice = shifted_slice(self.cur['labels'], cur_slice_pos + shift, cur_slice_pos + self.n_frames + shift)
             labels_slice = labels_slice.reshape(self.batch_size, self.n_frames, N_NOTES)
 
             # TODO remove to normal
-            # labels_slice = labels_slice.reshape(self.n_frames, self.batch_size, N_NOTES)
+            #labels_slice = labels_slice.reshape(self.batch_size, 16, 32, N_NOTES)
             return spectrum_slice, labels_slice
 
         return spectrum_slice
