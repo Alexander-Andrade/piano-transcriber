@@ -86,9 +86,15 @@ class DataGenerator(keras.utils.Sequence):
         spectrum_slice = self.cur['spectrum'][cur_slice_pos:cur_slice_pos + self.n_frames]
         spectrum_slice = spectrum_slice.reshape(self.batch_size, self.n_frames, spectrum_slice.shape[1])
 
+        # TODO remove to normal
+        # spectrum_slice = spectrum_slice.reshape(self.n_frames, self.batch_size, spectrum_slice.shape[1])
+
         if self.with_labels:
             labels_slice = shifted_slice(self.cur['labels'], cur_slice_pos + shift, cur_slice_pos + self.n_frames + shift)
             labels_slice = labels_slice.reshape(self.batch_size, self.n_frames, N_NOTES)
+
+            # TODO remove to normal
+            # labels_slice = labels_slice.reshape(self.n_frames, self.batch_size, N_NOTES)
             return spectrum_slice, labels_slice
 
         return spectrum_slice
@@ -128,24 +134,24 @@ if __name__ == "__main__":
     with open("train.yaml", 'r') as stream:
         #try:
         data = yaml.load(stream)
-        gen = DataGenerator(info=data, n_frames=512)
+        gen = DataGenerator(info=data, batch_size=1, n_frames=512)
         i = 0
 
-        # for x, y in gen:
-        #     print(i)
-        #     i += 1
-        #     grid = plt.GridSpec(2, 6, bottom=0.04, top=0.98, left=0.02, right=0.98)
-        #
-        #     axes = plt.subplot(grid[:, 0])
-        #     axes.imshow(x)
-        #
-        #     axes = plt.subplot(grid[:, 1])
-        #     axes.imshow(y)
-        #
-        #     mng = plt.get_current_fig_manager()
-        #     mng.window.state('zoomed')
-        #
-        #     plt.show()
+        for x, y in gen:
+            print(i)
+            i += 1
+            grid = plt.GridSpec(2, 6, bottom=0.04, top=0.98, left=0.02, right=0.98)
+
+            axes = plt.subplot(grid[:, 0])
+            axes.imshow(x.reshape((512, 84)))
+
+            axes = plt.subplot(grid[:, 1])
+            axes.imshow(y.reshape((512, 88)))
+
+            mng = plt.get_current_fig_manager()
+            mng.window.state('zoomed')
+
+            plt.show()
 
         print(len(gen))
 
