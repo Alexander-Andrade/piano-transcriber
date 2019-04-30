@@ -22,7 +22,7 @@ def rebuild_model(filename):
 
 
 test_generator = DataGenerator.from_file("test.yaml", n_frames=512, batch_size=1)
-model = rebuild_model("adam_sigmoid")
+model = rebuild_model("adam_sigmoid_full_dataset_0.06790831613004535")
 
 
 for x, y in test_generator:
