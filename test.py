@@ -22,7 +22,7 @@ def rebuild_model(filename):
 
 
 test_generator = DataGenerator.from_file("test.yaml", n_frames=512, batch_size=1)
-model = rebuild_model("adam_sigmoid_full_dataset_0.06790831613004535")
+model = rebuild_model("adam_sigmoid_full_dataset_0.06281912852946044")
 
 
 for x, y in test_generator:
@@ -31,11 +31,6 @@ for x, y in test_generator:
     x = x.reshape(x.shape[1], x.shape[2])
     y = y.reshape(y.shape[1], y.shape[2])
     prediction = prediction.reshape(prediction.shape[1], prediction.shape[2])
-
-    # # TODO remove after test
-    # x = x.reshape(x.shape[0], x.shape[2])
-    # y = y.reshape(y.shape[0], y.shape[2])
-    # prediction = prediction.reshape(prediction.shape[0], prediction.shape[2])
 
     grid = plt.GridSpec(2, 6, bottom=0.04, top=0.98, left=0.02, right=0.98)
 

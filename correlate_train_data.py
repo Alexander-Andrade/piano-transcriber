@@ -125,6 +125,6 @@ def stat(name, slice_length=512, corr_interval=(-30, 30)):
 
 
 if __name__ == "__main__":
-    name = 'mendel_op62_5'
+    name = 'balakirew_islamei'
     stat(name, corr_interval=(-100, 100))
     manual_look(name, corr_interval=(-100, 100), start_frame=0, best_shift=0)
