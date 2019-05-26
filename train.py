@@ -22,7 +22,7 @@ class SaveCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         model_json = self.model.to_json()
-        name = "{0}_{1}".format('rmsprop_sigmoid_full_dataset', logs.get('loss'))
+        name = "{0}_{1}".format('adam_146_single_146_dense_02_dropout', logs.get('loss'))
         with open("trained_models/{0}.json".format(name), "w") as json_file:
             json_file.write(model_json)
         self.model.save_weights("trained_models/{0}.h5".format(name))
@@ -39,7 +39,7 @@ def rebuild_model(filename):
 
     # evaluate loaded model on test data
     model.compile(loss='binary_crossentropy',
-                  optimizer='rmsprop')
+                  optimizer='adam')
 
     return model
 
@@ -54,18 +54,18 @@ def save_model(model, name):
 train_generator = DataGenerator.from_file("train.yaml", n_frames=n_frames, batch_size=batch_size)
 validation_generator = DataGenerator.from_file("validation.yaml", n_frames=n_frames, batch_size=batch_size)
 
-# model = rebuild_model("adam_sigmoid_full_dataset_0.06400026078128519")
+model = rebuild_model("adam_146_single_146_dense_02_dropout_0.06798835589917572")
 
 model = Sequential()
-model.add(LSTM(200,
-               dropout=0.5,
-               recurrent_dropout=0.5,
+model.add(LSTM(146,
+               dropout=0.2,
+               recurrent_dropout=0.2,
                input_shape=(n_frames, n_features),
                return_sequences=True))
-model.add(TimeDistributed(Dense(100, activation='relu')))
+model.add(TimeDistributed(Dense(146, activation='relu')))
 model.add(TimeDistributed(Dense(N_NOTES, activation='sigmoid')))
 model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop')
+              optimizer='adam')
 
 tb_callback = TensorBoard(log_dir='D:/tensorboard_logs/{}'.format(time.time()),
                           batch_size=batch_size,
@@ -83,5 +83,5 @@ model.fit_generator(generator=train_generator,
                     validation_data=validation_generator,
                     callbacks=[tb_callback, terminateOnNaN, save_cb, reduce_lr],
                     # steps_per_epoch=10,
-                    epochs=10)
+                    epochs=30)
 

@@ -22,7 +22,7 @@ def rebuild_model(filename):
 
 
 test_generator = DataGenerator.from_file("test.yaml", n_frames=512, batch_size=1)
-model = rebuild_model("adam_sigmoid_full_dataset_0.06281912852946044")
+model = rebuild_model("adam_146_single_146_dense_02_dropout_0.053171775029120384")
 
 
 for x, y in test_generator:
@@ -44,7 +44,7 @@ for x, y in test_generator:
     axes.imshow(prediction)
 
     axes = plt.subplot(grid[:, 3])
-    prediction = np.where(prediction > -0.3, 1., 0.)
+    prediction = np.where(prediction > 0.5, 1., 0.)
     axes.imshow(prediction)
 
     print(prediction.shape)
